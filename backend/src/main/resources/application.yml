@@ -1,0 +1,38 @@
+server:
+  port: 8080
+
+spring:
+  config:
+    import: optional:file:./application-local.yml
+  application:
+    name: shine-blog-backend
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/shine_blog?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai}
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: ${REDIS_DATABASE:0}
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      id-type: auto
+
+shine:
+  admin:
+    username: ${SHINE_ADMIN_USERNAME:admin}
+    password: ${SHINE_ADMIN_PASSWORD:change-me}
+    token-ttl-hours: ${SHINE_ADMIN_TOKEN_TTL_HOURS:12}
+  upload:
+    dir: ${SHINE_UPLOAD_DIR:uploads}
+
+spring.servlet.multipart:
+  max-file-size: 50MB
+  max-request-size: 50MB
