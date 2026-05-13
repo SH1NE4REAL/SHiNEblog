@@ -1,0 +1,16 @@
+.idea/
+.vscode/
+target/
+node_modules/
+dist/
+.m2/
+.npm-cache/
+uploads/
+backend/uploads/
+backend/application-local.yml
+backend/.maven-settings.xml
+.env
+.env.*
+!.env.example
+*.log
+*.iml
