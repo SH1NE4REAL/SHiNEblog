@@ -6,9 +6,15 @@ const audioRef = ref<HTMLAudioElement | null>(null)
 const playing = ref(false)
 const ready = ref(false)
 const error = ref('')
-let triedResumeOnGesture = false
+const audioSrc = ref('')
+const bgmSrc = '/uploads/bgm/bgm.web.mp3'
+const fallbackBgmSrc = '/uploads/bgm/bgm.mp3'
+let shouldResumeAfterFallback = false
 
 async function playBgm(showError = true) {
+  if (!audioSrc.value) {
+    audioSrc.value = bgmSrc
+  }
   const audio = audioRef.value
   if (!audio) {
     return false
@@ -49,27 +55,32 @@ function handlePause() {
 
 function handleReady() {
   ready.value = true
-  playBgm(false)
 }
 
-async function resumeAfterGesture() {
-  if (triedResumeOnGesture || playing.value) {
+function handleAudioError() {
+  if (audioSrc.value !== bgmSrc) {
+    error.value = '加载失败'
     return
   }
-  triedResumeOnGesture = true
+  shouldResumeAfterFallback = playing.value
+  audioSrc.value = fallbackBgmSrc
+  ready.value = false
+}
+
+async function handleLoadedMetadata() {
+  if (!shouldResumeAfterFallback) {
+    return
+  }
+  shouldResumeAfterFallback = false
   await playBgm(false)
 }
 
 onMounted(() => {
   window.addEventListener('shine:foreground-audio-play', pauseBgm)
-  window.addEventListener('pointerdown', resumeAfterGesture, { once: true })
-  window.addEventListener('keydown', resumeAfterGesture, { once: true })
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('shine:foreground-audio-play', pauseBgm)
-  window.removeEventListener('pointerdown', resumeAfterGesture)
-  window.removeEventListener('keydown', resumeAfterGesture)
 })
 </script>
 
@@ -77,10 +88,12 @@ onBeforeUnmount(() => {
   <div class="bgm-control">
     <audio
       ref="audioRef"
-      src="/uploads/bgm/bgm.mp3"
+      :src="audioSrc"
       loop
-      preload="metadata"
+      preload="none"
       @canplay="handleReady"
+      @loadedmetadata="handleLoadedMetadata"
+      @error="handleAudioError"
       @play="handlePlay"
       @pause="handlePause"
     ></audio>
