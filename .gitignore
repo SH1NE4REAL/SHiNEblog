@@ -5,6 +5,7 @@ node_modules/
 dist/
 .m2/
 .npm-cache/
+.tools/
 uploads/
 backend/uploads/
 backend/application-local.yml

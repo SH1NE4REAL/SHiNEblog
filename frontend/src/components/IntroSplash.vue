@@ -3,7 +3,9 @@ import { onBeforeUnmount, onMounted, ref } from 'vue'
 
 const visible = ref(false)
 const closing = ref(false)
-const introVideoSrc = '/uploads/intro/splash.mp4'
+const videoReady = ref(false)
+const introVideoSrc = '/uploads/intro/splash.web.mp4'
+const introPosterSrc = '/uploads/intro/splash-poster.jpg'
 let closeTimer: number | undefined
 let removeTimer: number | undefined
 
@@ -16,6 +18,12 @@ function closeIntro() {
   removeTimer = window.setTimeout(() => {
     visible.value = false
   }, 920)
+}
+
+function handleVideoReady(event: Event) {
+  videoReady.value = true
+  const video = event.currentTarget as HTMLVideoElement
+  video.play().catch(() => undefined)
 }
 
 onMounted(() => {
@@ -36,14 +44,29 @@ onBeforeUnmount(cleanup)
 
 <template>
   <Transition name="intro-shell" @after-leave="cleanup">
-    <div v-if="visible" class="intro-splash" :class="{ closing }">
+    <div
+      v-if="visible"
+      class="intro-splash"
+      :class="{ closing, 'is-video-ready': videoReady }"
+      :style="{ '--intro-poster': `url(${introPosterSrc})` }"
+    >
       <video
         class="intro-video"
         :src="introVideoSrc"
+        :poster="introPosterSrc"
         autoplay
         muted
         playsinline
-        preload="auto"
+        webkit-playsinline
+        x5-playsinline
+        x5-video-player-type="h5-page"
+        x5-video-player-fullscreen="false"
+        preload="metadata"
+        disablepictureinpicture
+        disableremoteplayback
+        controlslist="nodownload nofullscreen noremoteplayback"
+        @canplay="handleVideoReady"
+        @loadeddata="handleVideoReady"
         @ended="closeIntro"
       ></video>
       <div class="intro-flash" aria-hidden="true"></div>
