@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { LogIn } from 'lucide-vue-next'
+import axios from 'axios'
 import { login } from '../api/articles'
 
 const router = useRouter()
@@ -14,15 +15,24 @@ async function submit() {
   loading.value = true
   error.value = ''
   try {
-    const result = await login(username.value, password.value)
+    const result = await login(username.value.trim(), password.value.trim())
     if (!result.success) {
       error.value = result.message
       return
     }
     localStorage.setItem('shine_admin_token', result.data.token)
     await router.push('/studio')
-  } catch {
-    error.value = '登录失败'
+  } catch (err) {
+    if (axios.isAxiosError(err)) {
+      if (err.code === 'ECONNABORTED') {
+        error.value = '网络超时，请再点一次登录'
+        return
+      }
+      const message = err.response?.data?.message
+      error.value = message || '登录失败，请检查网络后重试'
+      return
+    }
+    error.value = '登录失败，请检查网络后重试'
   } finally {
     loading.value = false
   }

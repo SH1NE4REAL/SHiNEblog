@@ -12,6 +12,10 @@ function pauseBgmForTrack() {
   window.dispatchEvent(new CustomEvent('shine:foreground-audio-play'))
 }
 
+function optimizedAudioUrl(url: string) {
+  return url.replace(/\.mp3($|\?)/i, '.web.mp3$1')
+}
+
 onMounted(async () => {
   try {
     const page = await fetchMusicTracks()
@@ -49,7 +53,10 @@ onMounted(async () => {
             <div v-if="track.tags" class="tag-row">
               <span v-for="tag in track.tags.split(',')" :key="tag">{{ tag.trim() }}</span>
             </div>
-            <audio controls :src="track.audioUrl" @play="pauseBgmForTrack"></audio>
+            <audio controls preload="none" @play="pauseBgmForTrack">
+              <source :src="optimizedAudioUrl(track.audioUrl)" type="audio/mpeg" />
+              <source :src="track.audioUrl" type="audio/mpeg" />
+            </audio>
           </div>
         </article>
       </div>
