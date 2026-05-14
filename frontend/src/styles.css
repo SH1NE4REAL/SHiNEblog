@@ -1464,7 +1464,11 @@ label,
   inset: 0;
   z-index: 1000;
   overflow: hidden;
-  background: #f4fbff;
+  background:
+    linear-gradient(112deg, #f4fbff 0 24%, transparent 24%),
+    linear-gradient(122deg, rgba(8, 191, 255, 0.78) 0 58%, rgba(3, 91, 216, 0.84) 58% 100%),
+    var(--intro-poster, none) center / cover no-repeat,
+    #0b7fe8;
 }
 
 .route-slash-transition {
@@ -1482,25 +1486,39 @@ label,
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
-  background: #0b7fe8;
+  background:
+    var(--route-poster, none) center / cover no-repeat,
+    #0b7fe8;
 }
 
 .route-video-backdrop video {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0.42;
+  opacity: 0;
   filter: saturate(1.35) contrast(1.08);
+  transition: opacity 260ms ease;
+}
+
+.route-video-backdrop.is-video-ready video {
+  opacity: 0.42;
 }
 
 .route-video-backdrop.is-article-dive video {
   object-position: center 42%;
-  opacity: 0.3;
   transform: scaleX(-1) scale(1.08);
   filter: saturate(1.2) contrast(1.08) brightness(1.06);
 }
 
+.route-video-backdrop.is-article-dive.is-video-ready video {
+  opacity: 0.3;
+}
+
 .route-video-backdrop.is-music-ui video {
+  opacity: 0;
+}
+
+.route-video-backdrop.is-music-ui.is-video-ready video {
   opacity: 0.38;
 }
 
@@ -1527,7 +1545,13 @@ label,
   width: 100%;
   height: 100%;
   object-fit: cover;
+  opacity: 0;
   filter: saturate(1.28) contrast(1.12);
+  transition: opacity 360ms ease;
+}
+
+.intro-splash.is-video-ready .intro-video {
+  opacity: 1;
 }
 
 .intro-splash::before,
