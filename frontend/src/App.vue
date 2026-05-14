@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import { ArrowLeft, FileText, FolderKanban, Home, Music } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
+import { prefetchPublicContent } from './api/articles'
 import BgmControl from './components/BgmControl.vue'
 import IntroSplash from './components/IntroSplash.vue'
 import RouteVideoBackdrop from './components/RouteVideoBackdrop.vue'
@@ -14,6 +16,15 @@ function goBack() {
   }
   router.push('/')
 }
+
+onMounted(() => {
+  const prefetch = () => prefetchPublicContent()
+  if ('requestIdleCallback' in window) {
+    window.requestIdleCallback(prefetch, { timeout: 2500 })
+    return
+  }
+  globalThis.setTimeout(prefetch, 1200)
+})
 </script>
 
 <template>

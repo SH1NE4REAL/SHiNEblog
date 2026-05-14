@@ -1,16 +1,21 @@
 import { http } from './http'
+import { cachedPublicRequest, prefetchPublicRequest } from './cache'
 import type { ApiResponse, Article, LoginResponse, MusicTrack, PageResponse, Project, UploadResult } from '../types'
 
 export async function fetchPublishedArticles(page = 1, size = 10) {
-  const { data } = await http.get<ApiResponse<PageResponse<Article>>>('/articles', {
-    params: { page, size }
+  return cachedPublicRequest(`articles:${page}:${size}`, async () => {
+    const { data } = await http.get<ApiResponse<PageResponse<Article>>>('/articles', {
+      params: { page, size }
+    })
+    return data.data
   })
-  return data.data
 }
 
 export async function fetchArticleBySlug(slug: string) {
-  const { data } = await http.get<ApiResponse<Article>>(`/articles/${slug}`)
-  return data.data
+  return cachedPublicRequest(`article:${slug}`, async () => {
+    const { data } = await http.get<ApiResponse<Article>>(`/articles/${slug}`)
+    return data.data
+  })
 }
 
 export async function login(username: string, password: string) {
@@ -59,17 +64,42 @@ export async function deleteArticle(id: number) {
 }
 
 export async function fetchProjects(page = 1, size = 20) {
-  const { data } = await http.get<ApiResponse<PageResponse<Project>>>('/projects', {
-    params: { page, size }
+  return cachedPublicRequest(`projects:${page}:${size}`, async () => {
+    const { data } = await http.get<ApiResponse<PageResponse<Project>>>('/projects', {
+      params: { page, size }
+    })
+    return data.data
   })
-  return data.data
 }
 
 export async function fetchMusicTracks(page = 1, size = 20) {
-  const { data } = await http.get<ApiResponse<PageResponse<MusicTrack>>>('/music', {
-    params: { page, size }
+  return cachedPublicRequest(`music:${page}:${size}`, async () => {
+    const { data } = await http.get<ApiResponse<PageResponse<MusicTrack>>>('/music', {
+      params: { page, size }
+    })
+    return data.data
   })
-  return data.data
+}
+
+export function prefetchPublicContent() {
+  prefetchPublicRequest('articles:1:10', async () => {
+    const { data } = await http.get<ApiResponse<PageResponse<Article>>>('/articles', {
+      params: { page: 1, size: 10 }
+    })
+    return data.data
+  })
+  prefetchPublicRequest('projects:1:20', async () => {
+    const { data } = await http.get<ApiResponse<PageResponse<Project>>>('/projects', {
+      params: { page: 1, size: 20 }
+    })
+    return data.data
+  })
+  prefetchPublicRequest('music:1:20', async () => {
+    const { data } = await http.get<ApiResponse<PageResponse<MusicTrack>>>('/music', {
+      params: { page: 1, size: 20 }
+    })
+    return data.data
+  })
 }
 
 export async function fetchAdminProjects(page = 1, size = 20) {

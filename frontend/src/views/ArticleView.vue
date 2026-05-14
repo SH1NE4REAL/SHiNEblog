@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import MarkdownIt from 'markdown-it'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { fetchArticleBySlug, fetchPublishedArticles } from '../api/articles'
 import type { Article } from '../types'
@@ -12,22 +12,48 @@ const articles = ref<Article[]>([])
 const loading = ref(true)
 const error = ref('')
 
+const currentSlug = computed(() => String(route.params.slug || ''))
 const html = computed(() => markdown.render(article.value?.content || ''))
 
-onMounted(async () => {
+async function loadArticle(slug: string) {
+  loading.value = true
+  error.value = ''
   try {
-    const [currentArticle, articlePage] = await Promise.all([
-      fetchArticleBySlug(String(route.params.slug)),
-      fetchPublishedArticles(1, 50)
-    ])
-    article.value = currentArticle
-    articles.value = articlePage.records
+    article.value = await fetchArticleBySlug(slug)
   } catch {
+    article.value = null
     error.value = '文章不存在或暂时不可访问'
   } finally {
     loading.value = false
   }
-})
+}
+
+async function loadArticleList() {
+  try {
+    const articlePage = await fetchPublishedArticles(1, 50)
+    articles.value = articlePage.records
+  } catch {
+    articles.value = []
+  }
+}
+
+function scrollReaderToTop() {
+  globalThis.requestAnimationFrame(() => {
+    document.querySelector('.reader-panel')?.scrollIntoView({ block: 'start' })
+  })
+}
+
+watch(
+  currentSlug,
+  (slug) => {
+    if (slug) {
+      loadArticle(slug)
+    }
+  },
+  { immediate: true }
+)
+
+onMounted(loadArticleList)
 </script>
 
 <template>
@@ -43,6 +69,7 @@ onMounted(async () => {
           class="sidebar-article-link"
           :class="{ active: item.slug === article?.slug }"
           :to="`/articles/${item.slug}`"
+          @click="scrollReaderToTop"
         >
           <span>{{ item.title }}</span>
           <small>{{ item.publishedAt?.slice(0, 10) || '未发布' }}</small>
